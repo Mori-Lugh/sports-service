@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 
 from app.sample_data import MATCHES
 from app.schemas import Match
+from app.statistics import team_statistics, standings
 
 app = FastAPI(title="Sports Service")#создание приложения
 
@@ -42,3 +43,16 @@ def add_match(new_match: Match):
 
     MATCHES.append(new_match)
     return new_match
+
+
+@app.get("/teams/{team_id}/stats")
+def get_team_statistics(team_id: int, season_id: int = Query(gt=0)):
+    result = team_statistics(MATCHES, team_id, season_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Команда не найдена в этом сезоне")
+    return result
+
+
+@app.get("/standings")
+def get_standings(season_id: int = Query(gt=0)):
+    return standings(MATCHES, season_id)
